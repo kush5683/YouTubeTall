@@ -1,0 +1,10 @@
+body {
+    padding: 2em;
+    inline-size: 185px;
+    overflow-wrap: break-word;
+    bottom: 0;
+}
+
+p{
+    text-align: justify;
+}
