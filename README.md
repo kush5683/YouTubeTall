@@ -1,7 +1,7 @@
 <h1>YouTubeTall</h1>
     <p>Removes all YouTube Shorts from grid view subscription feed.</p>
     <img
-      src="YouTubeTall.png"
+      src="YouTubeTall/YouTubeTall.png"
       alt="YouTubeTall icon"
       width="128"
       height="128"
