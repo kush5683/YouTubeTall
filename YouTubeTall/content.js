@@ -10,6 +10,7 @@ function debounce(func, wait) {
 
 // Function to remove elements with the 'is-shorts' property
 function removeIsShortsElements() {
+  console.log("REMOVING");
   // Select all elements with the 'is-shorts' attribute
   const elementsWithIsShorts = document.querySelectorAll("[is-shorts]");
 
@@ -39,3 +40,4 @@ const debouncedRemoveIsShortsElements = debounce(removeIsShortsElements, 100);
 // Observe DOM changes and call removeIsShortsElements() when necessary
 const observer = new MutationObserver(handleDomMutations);
 observer.observe(document.body, { childList: true, subtree: true });
+window.addEventListener("load", removeIsShortsElements, false);
