@@ -30,6 +30,9 @@ function handleDomMutations(mutations) {
 
 removeIsShortsElements();
 
+window.addEventListener("popstate", removeIsShortsElements);
+window.addEventListener("hashchange", removeIsShortsElements);
+
 // Debounce removeIsShortsElements() with a 100ms delay
 const debouncedRemoveIsShortsElements = debounce(removeIsShortsElements, 100);
 
