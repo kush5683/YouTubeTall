@@ -8,8 +8,9 @@
     },
     "content_scripts": [
         {
+            "run_at": "document_end",
             "matches": [
-                "https://www.youtube.com/feed/subscriptions*"
+                "https://www.youtube.com/"
             ],
             "js": [
                 "content.js"
