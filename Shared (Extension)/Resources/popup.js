@@ -1,5 +1,6 @@
 const hideShortsCheckBox = document.getElementById("hideShorts");
-const storage = browser.storage.sync || browser.storage.local;
+const browserApi = typeof browser !== "undefined" ? browser : chrome;
+const storage = browserApi.storage.sync || browserApi.storage.local;
 
 hideShortsCheckBox.addEventListener("change", (e) => {
   setValue(e.target.checked);
@@ -7,7 +8,7 @@ hideShortsCheckBox.addEventListener("change", (e) => {
 
 async function setValue(value) {
   await storage.set({ hideShorts: value });
-  await browser.runtime.sendMessage({ type: "preference", hideShorts: value });
+  await browserApi.runtime.sendMessage({ type: "preference", hideShorts: value });
 }
 
 async function init() {

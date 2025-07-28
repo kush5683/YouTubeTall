@@ -1,7 +1,8 @@
+const browserApi = typeof browser !== "undefined" ? browser : chrome;
 let totalHidden = 0;
-const actionApi = browser.action || browser.browserAction;
+const actionApi = browserApi.action || browserApi.browserAction;
 
-browser.runtime.onMessage.addListener((request) => {
+browserApi.runtime.onMessage.addListener((request) => {
   if (request.type === "count") {
     totalHidden += request.count || 0;
     actionApi.setBadgeText({ text: totalHidden.toString() });
