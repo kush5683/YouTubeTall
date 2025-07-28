@@ -9,15 +9,49 @@ function debounce(func, wait) {
 }
 
 // Function to remove elements with the 'is-shorts' property
-function removeIsShortsElements() {
-    console.log("REMOVING")
-  // Select all elements with the 'is-shorts' attribute
-  const elementsWithIsShorts = document.querySelectorAll("[is-shorts]");
+const storage = browser.storage.sync || browser.storage.local;
+let hideShorts = true;
 
-  // Iterate through each element and remove it
+async function loadPreference() {
+  const result = await storage.get("hideShorts");
+  hideShorts = result.hideShorts !== undefined ? result.hideShorts : true;
+}
+
+loadPreference();
+
+browser.storage.onChanged.addListener((changes) => {
+  if (changes.hideShorts) {
+    hideShorts = changes.hideShorts.newValue;
+    if (hideShorts) {
+      removeIsShortsElements();
+    }
+  }
+});
+
+function sendCount() {
+  browser.runtime.sendMessage({ type: "count", count: 1 });
+}
+
+function removeIsShortsElements() {
+  if (!hideShorts) return;
+  const elementsWithIsShorts = document.querySelectorAll("[is-shorts]");
   elementsWithIsShorts.forEach((element) => {
     element.remove();
+    sendCount();
   });
+  removeAdditionalContent();
+}
+
+function removeAdditionalContent() {
+  const keywords = ["Premier", "Ad"];
+  document
+    .querySelectorAll("ytd-video-renderer,ytd-rich-item-renderer")
+    .forEach((item) => {
+      if (keywords.some((k) => item.innerText.includes(k))) {
+        item.remove();
+        sendCount();
+      }
+    });
 }
 
 // Function to handle DOM mutations and call removeIsShortsElements()
@@ -41,4 +75,6 @@ const debouncedRemoveIsShortsElements = debounce(removeIsShortsElements, 100);
 // Observe DOM changes and call removeIsShortsElements() when necessary
 const observer = new MutationObserver(handleDomMutations);
 observer.observe(document.body, { childList: true, subtree: true });
-window.addEventListener("load",debouncedRemoveIsShortsElements, false);
+window.addEventListener("load", () => {
+  loadPreference().then(removeIsShortsElements);
+}, false);

@@ -1,5 +1,6 @@
 <h1>YouTubeTall</h1>
-    <p>Removes all YouTube Shorts from grid view subscription feed.</p>
+    <p>Removes all YouTube Shorts from grid view subscription feed and allows
+    toggling this behavior from the popup.</p>
     <img
       src="YouTubeTall/YouTubeTall.png"
       alt="YouTubeTall icon"

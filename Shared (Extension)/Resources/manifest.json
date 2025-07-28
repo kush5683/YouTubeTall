@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "YouTubeTall",
-    "version": "2.0",
+    "version": "2.1",
     "description":"Removes all YouTube Shorts from grid view subscription feed.",
     "icons": {
         "128" : "images/YouTubeTall.png"
@@ -10,7 +10,7 @@
         {
             "run_at": "document_end",
             "matches": [
-                "https://www.youtube.com/"
+                "https://www.youtube.com/*"
             ],
             "js": [
                 "content.js"
@@ -29,9 +29,11 @@
             "strict_min_version": "42.0"
         }
     },
+    "background": {
+        "scripts": ["background.js"]
+    },
     "host_permissions": [
-        "https://www.youtube.com/feed/subscriptions"
-
+        "https://www.youtube.com/*"
     ],
     "permissions": [
         "storage",
