@@ -9,7 +9,8 @@ function debounce(func, wait) {
 }
 
 // Function to remove elements with the 'is-shorts' property
-const storage = browser.storage.sync || browser.storage.local;
+const browserApi = typeof browser !== "undefined" ? browser : chrome;
+const storage = browserApi.storage.sync || browserApi.storage.local;
 let hideShorts = true;
 let removedCount = 0;
 
@@ -20,7 +21,7 @@ async function loadPreference() {
 
 loadPreference();
 
-browser.storage.onChanged.addListener((changes) => {
+browserApi.storage.onChanged.addListener((changes) => {
   if (changes.hideShorts) {
     hideShorts = changes.hideShorts.newValue;
     if (hideShorts) {
@@ -30,7 +31,7 @@ browser.storage.onChanged.addListener((changes) => {
 });
 
 function sendCount() {
-  browser.runtime.sendMessage({ type: "count", count: 1 });
+  browserApi.runtime.sendMessage({ type: "count", count: 1 });
 }
 
 function removeIsShortsElements() {
