@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "YouTubeTall",
-    "version": "2.1",
+    "version": "3.2",
     "description":"Removes all YouTube Shorts from grid view subscription feed.",
     "icons": {
         "128" : "images/YouTubeTall.png"

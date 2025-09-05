@@ -1,4 +1,6 @@
 const hideShortsCheckBox = document.getElementById("hideShorts");
+const hideShortsNavCheckBox = document.getElementById("hideShortsNav");
+const hideMusicNavCheckBox = document.getElementById("hideMusicNav");
 const browserApi = typeof browser !== "undefined" ? browser : chrome;
 const storage = browserApi.storage.sync || browserApi.storage.local;
 
@@ -16,23 +18,24 @@ function setVersion() {
   }
 }
 
-hideShortsCheckBox.addEventListener("change", (e) => {
-  setValue(e.target.checked);
-});
+hideShortsCheckBox.addEventListener("change", (e) => setValues({ hideShorts: e.target.checked }));
+hideShortsNavCheckBox.addEventListener("change", (e) => setValues({ hideShortsNav: e.target.checked }));
+hideMusicNavCheckBox.addEventListener("change", (e) => setValues({ hideMusicNav: e.target.checked }));
 
-async function setValue(value) {
-  await storage.set({ hideShorts: value });
-  await browserApi.runtime.sendMessage({ type: "preference", hideShorts: value });
+async function setValues(values) {
+  await storage.set(values);
+  await browserApi.runtime.sendMessage({ type: "preference", ...values });
 }
 
 async function init() {
-  const result = await storage.get("hideShorts");
-  let value = result.hideShorts;
-  if (value === undefined) {
-    value = true;
-  }
-  hideShortsCheckBox.checked = value;
-  await setValue(value);
+  const result = await storage.get(["hideShorts", "hideShortsNav", "hideMusicNav"]);
+  const hideShorts = result.hideShorts !== undefined ? result.hideShorts : true;
+  const hideShortsNav = result.hideShortsNav !== undefined ? result.hideShortsNav : false;
+  const hideMusicNav = result.hideMusicNav !== undefined ? result.hideMusicNav : false;
+  hideShortsCheckBox.checked = hideShorts;
+  hideShortsNavCheckBox.checked = hideShortsNav;
+  hideMusicNavCheckBox.checked = hideMusicNav;
+  await setValues({ hideShorts, hideShortsNav, hideMusicNav });
 }
 
 setVersion();
