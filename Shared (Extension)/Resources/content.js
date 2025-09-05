@@ -33,12 +33,38 @@ function sendCount() {
   browserApi.runtime.sendMessage({ type: "count", count: 1 });
 }
 
+function getVideoCards() {
+  return document.querySelectorAll(
+    [
+      "ytd-rich-item-renderer",
+      "ytd-video-renderer",
+      "ytd-grid-video-renderer",
+      "ytd-compact-video-renderer",
+      "ytd-reel-shelf-renderer",
+      "ytd-reel-video-renderer",
+    ].join(",")
+  );
+}
+
+function isShortsCard(card) {
+  if (!card) return false;
+  if (card.hasAttribute("is-shorts")) return true;
+  const shortsLink = card.querySelector(
+    'a#thumbnail[href*="/shorts/"], a#video-title-link[href*="/shorts/"], a[href*="/shorts/"]'
+  );
+  if (shortsLink) return true;
+  if (card.tagName && card.tagName.toLowerCase() === "ytd-reel-shelf-renderer") return true;
+  return false;
+}
+
 function removeIsShortsElements() {
   if (!hideShorts) return;
-  const elementsWithIsShorts = document.querySelectorAll("[is-shorts]");
-  elementsWithIsShorts.forEach((element) => {
-    element.remove();
-    sendCount();
+  const cards = getVideoCards();
+  cards.forEach((card) => {
+    if (isShortsCard(card)) {
+      card.remove();
+      sendCount();
+    }
   });
   removeAdditionalContent();
 }

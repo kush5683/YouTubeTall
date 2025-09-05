@@ -34,26 +34,78 @@ function sendCount() {
   browserApi.runtime.sendMessage({ type: "count", count: 1 });
 }
 
-function removeIsShortsElements() {
-  if (!hideShorts) return;
-  const elementsWithIsShorts = document.querySelectorAll("[is-shorts]");
-  elementsWithIsShorts.forEach((element) => {
-    element.remove();
-    sendCount();
-  });
-  removeAdditionalContent();
+// Only process on the Subscriptions feed page
+function shouldProcessPage() {
+  // YouTube SPA uses pathnames like "/feed/subscriptions" for subs
+  return location && typeof location.pathname === "string" && location.pathname.startsWith("/feed/subscriptions");
 }
 
-function removeAdditionalContent() {
-  const keywords = ["Premier", "Ad"];
-  document
-    .querySelectorAll("ytd-video-renderer,ytd-rich-item-renderer")
-    .forEach((item) => {
-      if (keywords.some((k) => item.innerText.includes(k))) {
-        item.remove();
-        sendCount();
+function getVideoCards() {
+  return document.querySelectorAll(
+    [
+      "ytd-rich-item-renderer",
+      "ytd-video-renderer",
+      "ytd-grid-video-renderer",
+      "ytd-compact-video-renderer",
+      // Full shelves like the Shorts shelf
+      "ytd-rich-shelf-renderer",
+      "ytd-reel-shelf-renderer",
+      "ytd-reel-video-renderer",
+    ].join(",")
+  );
+}
+
+function isShortsCard(card) {
+  if (!card) return false;
+  if (card.hasAttribute("is-shorts")) return true;
+  // Detect Shorts by link targets within the card
+  const shortsLink = card.querySelector(
+    'a#thumbnail[href*="/shorts/"], a#video-title-link[href*="/shorts/"], a[href*="/shorts/"]'
+  );
+  if (shortsLink) return true;
+  // Reels shelf is dedicated to Shorts
+  if (card.tagName && card.tagName.toLowerCase() === "ytd-reel-shelf-renderer") return true;
+  // Rich shelf (e.g., Shorts shelf on home/subs)
+  if (card.tagName && card.tagName.toLowerCase() === "ytd-rich-shelf-renderer") return true;
+  return false;
+}
+
+function removeIsShortsElements() {
+  if (!hideShorts) return;
+  if (!shouldProcessPage()) return; // avoid affecting History and other pages
+  const cards = getVideoCards();
+  let removed = 0;
+  cards.forEach((card) => {
+    if (isShortsCard(card)) {
+      card.remove();
+      removed++;
+      sendCount();
+    }
+  });
+  removedCount += removed;
+  removeShortsDismissibleBlocks();
+}
+
+// Remove Shorts contained within generic "#dismissible" blocks without over-matching
+function removeShortsDismissibleBlocks() {
+  const blocks = document.querySelectorAll('#dismissible, #dismissable');
+  blocks.forEach((block) => {
+    // Only treat as Shorts if a shorts link exists or it's within a shorts shelf/reel
+    const hasShortLink = block.querySelector('a[href*="/shorts/"]');
+    const inReel = block.closest('ytd-reel-shelf-renderer, ytd-reel-video-renderer');
+    const inRichShelf = block.closest('ytd-rich-shelf-renderer');
+    if (hasShortLink || inReel || inRichShelf) {
+      const container = block.closest(
+        'ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer'
+      );
+      if (container) {
+        container.remove();
+      } else {
+        block.remove();
       }
-    });
+      sendCount();
+    }
+  });
 }
 
 // Function to handle DOM mutations and call removeIsShortsElements()
