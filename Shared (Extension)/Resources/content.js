@@ -35,6 +35,7 @@ const DEFAULT_CONFIG = {
       "ytd-reel-shelf-renderer",
       "ytd-reel-video-renderer",
       "ytd-shelf-renderer",
+      "ytd-rich-section-renderer",
     ],
     shortsLinkSelectors: [
       'a#thumbnail[href*="/shorts/"]',
