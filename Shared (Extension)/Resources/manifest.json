@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "YouTubeTall",
-    "version": "3.2",
-    "description":"Removes all YouTube Shorts from grid view subscription feed.",
+    "version": "4.0",
+    "description":"Removes YouTube Shorts from Home, Subscriptions, Search, and channel pages. Optional toggles hide Shorts and YouTube Music in the sidebar.",
     "icons": {
         "128" : "images/YouTubeTall.png"
     },
