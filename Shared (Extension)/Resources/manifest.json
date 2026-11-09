@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "YouTubeTall",
-    "version": "4.0",
+    "version": "4.1",
     "description":"Removes YouTube Shorts from Home, Subscriptions, Search, and channel pages. Optional toggles hide Shorts and YouTube Music in the sidebar.",
     "icons": {
         "128" : "images/YouTubeTall.png"
@@ -12,7 +12,11 @@
             "matches": [
                 "https://www.youtube.com/*"
             ],
+            "css": [
+                "sidebar.css"
+            ],
             "js": [
+                "sidebar.js",
                 "content.js"
             ]
         }

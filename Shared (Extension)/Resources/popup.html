@@ -1,28 +1,41 @@
+<!doctype html>
 <html lang="en">
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YouTubeTall</title>
+    <link rel="stylesheet" href="popup.css">
     <script src="popup.js" defer></script>
-    <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <h2>YouTubeTall <small id="extVersion"></small></h2>
-    <p>Removes YouTube Shorts from Subscriptions and optional nav items.</p>
-    <label>
-      <input type="checkbox" id="hideShorts" /> Hide Shorts
-    </label>
-    <br />
-    <label>
-      <input type="checkbox" id="hideShortsNav" /> Hide "Shorts" in sidebar
-    </label>
-    <br />
-    <label>
-      <input type="checkbox" id="hideMusicNav" /> Hide "YouTube Music" in sidebar
-    </label>
-    <img
-      src="images/YouTubeTall.png"
-      alt="YouTubeTall icon"
-      width="128"
-      height="128"
-    />
-    <p>Developed by <a href="https://www.kushshah.net">Kush Shah</a></p>
+    <header>
+      <img src="images/YouTubeTall.png" width="40" height="40" alt="">
+      <h1>YouTubeTall</h1>
+      <span id="extVersion"></span>
+    </header>
+
+    <main>
+      <fieldset>
+        <legend>Video feeds and search</legend>
+        <label>
+          <span>Hide Shorts</span>
+          <input type="checkbox" id="hideShorts">
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Sidebar</legend>
+        <label>
+          <span>Hide Shorts</span>
+          <input type="checkbox" id="hideShortsNav">
+        </label>
+        <label>
+          <span>Hide YouTube Music</span>
+          <input type="checkbox" id="hideMusicNav">
+        </label>
+      </fieldset>
+    </main>
+
+    <footer>Developed by <a href="https://www.kushshah.net" target="_blank" rel="noopener noreferrer">Kush Shah</a></footer>
   </body>
 </html>

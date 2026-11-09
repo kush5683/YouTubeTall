@@ -1,10 +1,149 @@
-body {
-    padding: 2em;
-    inline-size: 185px;
-    overflow-wrap: break-word;
-    bottom: 0;
+* {
+  box-sizing: border-box;
 }
 
-p{
-    text-align: justify;
+:root {
+  color-scheme: light dark;
+  --surface: #fff;
+  --ink: #181819;
+  --muted: #56565a;
+  --rule: #d9d9dc;
+  --accent: #e4002b;
+  --switch-off: #76767b;
+}
+
+body {
+  width: 320px;
+  margin: 0;
+  padding: 18px 20px 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 15px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+header {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink);
+}
+
+header img {
+  display: block;
+  object-fit: contain;
+}
+
+h1 {
+  margin: 0;
+  font-size: 23px;
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+  overflow-wrap: anywhere;
+}
+
+#extVersion, footer, legend {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+#extVersion {
+  font-variant-numeric: tabular-nums;
+}
+
+fieldset {
+  min-inline-size: 0;
+  margin: 16px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  padding: 0;
+  font-weight: 600;
+}
+
+label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding-block: 5px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+label + label {
+  border-top: 1px solid var(--rule);
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  display: grid;
+  align-items: center;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--switch-off);
+  cursor: pointer;
+}
+
+input[type="checkbox"]::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+input:checked {
+  background: var(--accent);
+}
+
+input:checked::before {
+  justify-self: end;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 5px;
+  padding-top: 12px;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #19191a;
+    --ink: #f7f7f8;
+    --muted: #bdbdc3;
+    --rule: #424246;
+    --accent: #cc1033;
+  }
+}
+
+@media (forced-colors: active) {
+  input[type="checkbox"] {
+    appearance: auto;
+    width: 20px;
+    height: 20px;
+    justify-self: end;
+  }
+
+  input[type="checkbox"]::before {
+    content: none;
+  }
 }

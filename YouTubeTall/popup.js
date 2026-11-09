@@ -5,17 +5,10 @@ const browserApi = typeof browser !== "undefined" ? browser : chrome;
 const storage = browserApi.storage.sync || browserApi.storage.local;
 
 function setVersion() {
-  try {
-    const manifest = browser?.runtime?.getManifest?.();
-    const version = manifest && manifest.version ? manifest.version : "";
-    const el = document.getElementById("extVersion");
-    if (el && version) {
-      el.textContent = `v${version}`;
-      el.setAttribute("title", `Version ${version}`);
-    }
-  } catch (e) {
-    // no-op
-  }
+  const version = browserApi.runtime.getManifest().version;
+  const el = document.getElementById("extVersion");
+  el.textContent = `v${version}`;
+  el.setAttribute("title", `Version ${version}`);
 }
 
 hideShortsCheckBox.addEventListener("change", (e) => setValues({ hideShorts: e.target.checked }));

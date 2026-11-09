@@ -42,7 +42,7 @@ const DEFAULT_CONFIG = {
       'a#video-title-link[href*="/shorts/"]',
       'a[href*="/shorts/"]',
     ],
-    shortsCardTags: ["ytd-reel-shelf-renderer", "ytd-rich-shelf-renderer"],
+    shortsCardTags: ["ytd-reel-shelf-renderer", "ytd-reel-video-renderer"],
     shortsAttributes: ["is-shorts"],
     dismissibleSelectors: ["#dismissible", "#dismissable"],
     dismissibleContainerSelectors: [
@@ -54,41 +54,15 @@ const DEFAULT_CONFIG = {
     shortsAncestorSelectors: [
       "ytd-reel-shelf-renderer",
       "ytd-reel-video-renderer",
-      "ytd-rich-shelf-renderer",
+      "[is-shorts]",
     ],
   },
-  sidebarShorts: {
-    fullGuideSelectors: [
-      'ytd-guide-entry-renderer a[title="Shorts"]',
-      'ytd-guide-entry-renderer a[aria-label="Shorts"]',
-      'ytd-guide-entry-renderer a[href*="/shorts"]',
-    ],
-    fullGuideContainer: "ytd-guide-entry-renderer",
-    miniGuideSelectors: [
-      'ytd-mini-guide-entry-renderer a[title="Shorts"]',
-      'ytd-mini-guide-entry-renderer a[aria-label="Shorts"]',
-      'ytd-mini-guide-entry-renderer a[href*="/shorts"]',
-    ],
-    miniGuideContainer: "ytd-mini-guide-entry-renderer",
-  },
-  sidebarMusic: {
-    fullGuideSelectors: [
-      'ytd-guide-entry-renderer a[href*="music.youtube.com"]',
-      'ytd-guide-entry-renderer a[title="YouTube Music"]',
-      'ytd-guide-entry-renderer a[aria-label="YouTube Music"]',
-    ],
-    fullGuideContainer: "ytd-guide-entry-renderer",
-    miniGuideSelectors: [
-      'ytd-mini-guide-entry-renderer a[href*="music.youtube.com"]',
-      'ytd-mini-guide-entry-renderer a[title="YouTube Music"]',
-      'ytd-mini-guide-entry-renderer a[aria-label="YouTube Music"]',
-    ],
-    miniGuideContainer: "ytd-mini-guide-entry-renderer",
-  },
+  sidebarShorts: defaultShortsGuide,
+  sidebarMusic: defaultMusicGuide,
 };
 
 let activeConfig = DEFAULT_CONFIG;
-let hideShorts = true;
+let hideShorts = false;
 let hideShortsNav = false;
 let hideMusicNav = false;
 
@@ -128,28 +102,24 @@ async function loadPreference() {
   hideMusicNav = result.hideMusicNav !== undefined ? result.hideMusicNav : false;
 }
 
-loadConfig();
-loadPreference();
+const setSidebarSections = createSidebarFilter(sendCount);
+
+function updateSidebar() {
+  setSidebarSections(
+    hideShortsNav && activeConfig.sidebarShorts,
+    hideMusicNav && activeConfig.sidebarMusic,
+  );
+}
 
 browserApi.storage.onChanged.addListener((changes) => {
-  if (changes.hideShorts) {
-    hideShorts = changes.hideShorts.newValue;
-    if (hideShorts) removeIsShortsElements();
-  }
-  if (changes.hideShortsNav) {
-    hideShortsNav = changes.hideShortsNav.newValue;
-    if (hideShortsNav) removeGuideShortsEntry();
-  }
-  if (changes.hideMusicNav) {
-    hideMusicNav = changes.hideMusicNav.newValue;
-    if (hideMusicNav) removeGuideMusicEntry();
-  }
+  if (changes.hideShortsNav) hideShortsNav = changes.hideShortsNav.newValue;
+  if (changes.hideMusicNav) hideMusicNav = changes.hideMusicNav.newValue;
   if (changes.selectorConfig) {
     activeConfig = mergeConfig(DEFAULT_CONFIG, changes.selectorConfig.newValue);
-    if (hideShorts) removeIsShortsElements();
-    if (hideShortsNav) removeGuideShortsEntry();
-    if (hideMusicNav) removeGuideMusicEntry();
   }
+  if (changes.hideShortsNav || changes.hideMusicNav || changes.selectorConfig) updateSidebar();
+  if (changes.hideShorts) hideShorts = changes.hideShorts.newValue;
+  if (changes.hideShorts || changes.selectorConfig) removeIsShortsElements();
 });
 
 function sendCount() {
@@ -186,17 +156,20 @@ function getVideoCards() {
   return document.querySelectorAll(selector);
 }
 
+const regularVideoLinks = 'a[href*="/watch?"], a[href*="/live/"], a[href*="/playlist?"]';
+
+function hasOnlyShortsLinks(element, shortsSelector) {
+  return shortsSelector && element.querySelector(shortsSelector) && !element.querySelector(regularVideoLinks);
+}
+
 function isShortsCard(card) {
-  if (!card) return false;
   const cfg = activeConfig.shortsRemoval;
   for (const attr of cfg.shortsAttributes) {
     if (card.hasAttribute(attr)) return true;
   }
-  const linkSelector = joinSelectors(cfg.shortsLinkSelectors);
-  if (linkSelector && card.querySelector(linkSelector)) return true;
   const tag = card.tagName ? card.tagName.toLowerCase() : "";
   if (tag && cfg.shortsCardTags.some((t) => t.toLowerCase() === tag)) return true;
-  return false;
+  return hasOnlyShortsLinks(card, joinSelectors(cfg.shortsLinkSelectors));
 }
 
 function removeIsShortsElements() {
@@ -205,7 +178,7 @@ function removeIsShortsElements() {
   if (!shouldProcessPage()) return; // avoid affecting History and other pages
   const cards = getVideoCards();
   cards.forEach((card) => {
-    if (isShortsCard(card)) {
+    if (card.isConnected && isShortsCard(card)) {
       card.remove();
       sendCount();
     }
@@ -225,81 +198,25 @@ function removeShortsDismissibleBlocks() {
   const linkSelector = joinSelectors(cfg.shortsLinkSelectors);
   const blocks = document.querySelectorAll(blockSelector);
   blocks.forEach((block) => {
-    const hasShortLink = linkSelector ? block.querySelector(linkSelector) : null;
+    if (!block.isConnected) return;
     const inShortsAncestor = ancestorSelector ? block.closest(ancestorSelector) : null;
-    if (hasShortLink || inShortsAncestor) {
-      const container = containerSelector ? block.closest(containerSelector) : null;
-      if (container) {
-        container.remove();
-      } else {
-        block.remove();
-      }
-      sendCount();
-    }
+    if (!inShortsAncestor && !hasOnlyShortsLinks(block, linkSelector)) return;
+    const container = containerSelector ? block.closest(containerSelector) : null;
+    const target = container && !container.querySelector(regularVideoLinks) ? container : block;
+    target.remove();
+    sendCount();
   });
 }
 
-function removeSidebarEntry(sectionKey) {
-  const cfg = activeConfig[sectionKey];
-  if (!cfg) return;
-  for (const variant of ["fullGuide", "miniGuide"]) {
-    const selectors = cfg[`${variant}Selectors`];
-    const container = cfg[`${variant}Container`];
-    const selector = joinSelectors(selectors);
-    if (!selector || !container) continue;
-    const anchors = document.querySelectorAll(selector);
-    anchors.forEach((anchor) => {
-      const containerEl = anchor.closest(container);
-      if (containerEl) {
-        containerEl.remove();
-        sendCount();
-      }
-    });
-  }
-}
-
-function removeGuideShortsEntry() {
-  if (!hideShortsNav) return;
-  removeSidebarEntry("sidebarShorts");
-}
-
-function removeGuideMusicEntry() {
-  if (!hideMusicNav) return;
-  removeSidebarEntry("sidebarMusic");
-}
-
-function handleDomMutations(mutations) {
-  for (let mutation of mutations) {
-    if (mutation.type === "childList") {
-      debouncedRemoveIsShortsElements();
-      debouncedRemoveGuideShortsEntry();
-      debouncedRemoveGuideMusicEntry();
-    }
-  }
-}
-
-removeIsShortsElements();
-removeGuideShortsEntry();
-removeGuideMusicEntry();
+Promise.all([loadConfig(), loadPreference()]).then(() => {
+  updateSidebar();
+  removeIsShortsElements();
+});
 
 window.addEventListener("popstate", removeIsShortsElements);
 window.addEventListener("hashchange", removeIsShortsElements);
-window.addEventListener("hashchange", removeGuideShortsEntry);
-window.addEventListener("hashchange", removeGuideMusicEntry);
+window.addEventListener("load", removeIsShortsElements);
 
-
-// Debounce removeIsShortsElements() with a 100ms delay
-const debouncedRemoveIsShortsElements = debounce(removeIsShortsElements, 100);
-const debouncedRemoveGuideShortsEntry = debounce(removeGuideShortsEntry, 100);
-const debouncedRemoveGuideMusicEntry = debounce(removeGuideMusicEntry, 100);
-
-// Observe DOM changes and call removeIsShortsElements() when necessary
-const observer = new MutationObserver(handleDomMutations);
+const scanAfterMutation = debounce(removeIsShortsElements, 100);
+const observer = new MutationObserver(scanAfterMutation);
 observer.observe(document.body, { childList: true, subtree: true });
-window.addEventListener("load", () => {
-  Promise.all([loadConfig(), loadPreference()]).then(() => {
-    removeIsShortsElements();
-    removeGuideShortsEntry();
-    removeGuideMusicEntry();
-  });
-}, false);
